@@ -1,63 +1,29 @@
-/**
- * ═══════════════════════════════════════════════════════════
- *  UI.JS — Pure Rendering Engine
- * ═══════════════════════════════════════════════════════════
- *
- *  Rules:
- *    1. Every DOM access is wrapped in a defensive check:
- *         if (el) { el.textContent = ... }
- *       This ensures ZERO null-reference crashes.
- *
- *    2. Functions are pure renderers — they read state and
- *       paint the DOM, with no side-effects on the state.
- *
- *    3. `render(state)` is the single entry point called by
- *       AppState.subscribe(). It delegates to sub-renderers.
- */
-
-/* global AppState */
-/* exported UIRenderer */
+// ui.js — renders state to the DOM, every access is null-checked
 
 const UIRenderer = (() => {
   'use strict';
 
-  // ── JLPT level → color-class mapping ────────────
   const JLPT_CLASS_MAP = {
-    5:    'jlpt-badge--n5',   // Green
-    4:    'jlpt-badge--n4',   // Blue
-    3:    'jlpt-badge--n3',   // Yellow
-    2:    'jlpt-badge--n2',   // Orange
-    1:    'jlpt-badge--n1',   // Red
-    null: 'jlpt-badge--none', // Gray (unrated)
+    5:    'jlpt-badge--n5',
+    4:    'jlpt-badge--n4',
+    3:    'jlpt-badge--n3',
+    2:    'jlpt-badge--n2',
+    1:    'jlpt-badge--n1',
+    null: 'jlpt-badge--none',
   };
 
   const JLPT_LABEL_MAP = {
     5: 'N5', 4: 'N4', 3: 'N3', 2: 'N2', 1: 'N1', null: '—',
   };
 
-  // ────────────────────────────────────────────────
-  //  STATUS BAR
-  // ────────────────────────────────────────────────
-
-  /**
-   * Update the status bar with a message and visual style.
-   * @param {string} message - Human-readable status text.
-   * @param {'info'|'loading'|'success'|'warn'|'error'} type
-   */
   function setStatus(message, type = 'info') {
     const bar = document.getElementById('status-bar');
     if (bar) {
       bar.className = 'status-bar status-bar--' + type;
       const textEl = bar.querySelector('.status-bar__text');
-      if (textEl) {
-        textEl.textContent = message;
-      }
+      if (textEl) textEl.textContent = message;
     }
   }
-
-  // ────────────────────────────────────────────────
-  //  STATS DASHBOARD
-  // ────────────────────────────────────────────────
 
   function renderStats(state) {
     const dashboard = document.getElementById('stats-dashboard');
@@ -65,7 +31,6 @@ const UIRenderer = (() => {
 
     const hasData = state.parsedKanji && state.parsedKanji.length > 0;
     dashboard.hidden = !hasData;
-
     if (!hasData) return;
 
     const setVal = (id, val) => {
@@ -78,10 +43,6 @@ const UIRenderer = (() => {
     setVal('stat-hiragana', state.charStats.hiragana);
     setVal('stat-katakana', state.charStats.katakana);
   }
-
-  // ────────────────────────────────────────────────
-  //  JLPT FILTER TABS
-  // ────────────────────────────────────────────────
 
   function renderFilters(state) {
     const nav = document.getElementById('jlpt-filters');
@@ -100,13 +61,6 @@ const UIRenderer = (() => {
     });
   }
 
-  // ────────────────────────────────────────────────
-  //  KANJI BREAKDOWN GRID
-  // ────────────────────────────────────────────────
-
-  /**
-   * Filter kanji data based on the active JLPT level.
-   */
   function getFilteredKanji(state) {
     if (!state.kanjiData) return [];
     if (state.jlptFilter === 'all') return state.kanjiData;
@@ -116,16 +70,13 @@ const UIRenderer = (() => {
     return state.kanjiData.filter((k) => String(k.jlpt) === state.jlptFilter);
   }
 
-  /**
-   * Build the HTML for a single kanji breakdown card.
-   */
   function buildKanjiCard(entry) {
-    const jlptNum   = entry.jlpt;
+    const jlptNum    = entry.jlpt;
     const badgeClass = JLPT_CLASS_MAP[jlptNum] || JLPT_CLASS_MAP[null];
     const badgeLabel = JLPT_LABEL_MAP[jlptNum] || '—';
 
-    const kun = (entry.kun_readings || []).join('、 ') || '—';
-    const on  = (entry.on_readings  || []).join('、 ') || '—';
+    const kun      = (entry.kun_readings || []).join('、 ') || '—';
+    const on       = (entry.on_readings  || []).join('、 ') || '—';
     const meanings = (entry.meanings || []).join(', ') || 'No data';
 
     return `
@@ -167,7 +118,7 @@ const UIRenderer = (() => {
 
     if (!filtered || filtered.length === 0) {
       if (state.kanjiData && state.kanjiData.length > 0) {
-        // Data exists but nothing matches filter
+        // data exists but nothing matches the active filter
         grid.innerHTML = `
           <div class="kanji-grid__empty">
             <p>No kanji match the selected JLPT level. Try "All" to see everything.</p>
@@ -180,10 +131,6 @@ const UIRenderer = (() => {
 
     grid.innerHTML = filtered.map(buildKanjiCard).join('');
   }
-
-  // ────────────────────────────────────────────────
-  //  FLASHCARD SECTION
-  // ────────────────────────────────────────────────
 
   function renderFlashcards(state) {
     const section = document.getElementById('flashcard-section');
@@ -203,7 +150,6 @@ const UIRenderer = (() => {
     const card = cards[idx];
     if (!card) return;
 
-    // Update counter
     if (counter) {
       counter.textContent = `${idx + 1} / ${cards.length}`;
     }
@@ -232,7 +178,7 @@ const UIRenderer = (() => {
       </div>
     `;
 
-    // Attach flip handler (event delegation on the stage)
+    // re-attach listeners since innerHTML wipes them
     const flashcardEl = stage.querySelector('.flashcard');
     if (flashcardEl) {
       flashcardEl.addEventListener('click', () => {
@@ -247,29 +193,16 @@ const UIRenderer = (() => {
     }
   }
 
-  // ────────────────────────────────────────────────
-  //  LOADING INDICATOR
-  // ────────────────────────────────────────────────
-
   function renderLoading(state) {
     const btn = document.getElementById('analyze-btn');
     if (btn) {
       btn.disabled = state.isLoading;
       const icon = btn.querySelector('.analyzer-input__button-icon');
-      if (icon) {
-        icon.textContent = state.isLoading ? '⏳' : '🔍';
-      }
+      if (icon) icon.textContent = state.isLoading ? '⏳' : '🔍';
     }
   }
 
-  // ────────────────────────────────────────────────
-  //  MASTER RENDER (called on every state change)
-  // ────────────────────────────────────────────────
-
-  /**
-   * Central render dispatcher. Receives a state snapshot
-   * and delegates to each sub-renderer.
-   */
+  // single entry point — delegates to each sub-renderer
   function render(state) {
     renderLoading(state);
     renderStats(state);
@@ -278,6 +211,5 @@ const UIRenderer = (() => {
     renderFlashcards(state);
   }
 
-  // ── Public API ───────────────────────────────────
   return { render, setStatus };
 })();
