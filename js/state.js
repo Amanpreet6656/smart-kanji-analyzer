@@ -1,30 +1,8 @@
-/**
- * ═══════════════════════════════════════════════════════════
- *  STATE.JS — Centralized Application State Manager
- * ═══════════════════════════════════════════════════════════
- *
- *  Implements a lightweight observer / pub-sub pattern.
- *  Every mutation calls `notify()` so subscribed renderers
- *  can re-paint only what changed.
- *
- *  Tracked fields:
- *    - inputText      : raw user input string
- *    - parsedKanji    : array of unique kanji characters
- *    - charStats      : { total, kanji, hiragana, katakana }
- *    - kanjiData      : array of enriched kanji data objects
- *    - flashcards     : array of flashcard objects
- *    - flashcardIndex : currently displayed flashcard (0-based)
- *    - jlptFilter     : 'all' | '1' | '2' | '3' | '4' | '5' | 'none'
- *    - isLoading      : boolean indicating a fetch is in progress
- */
-
-/* global */
-/* exported AppState */
+// state.js — central app state w/ pub-sub notifications
 
 const AppState = (() => {
   'use strict';
 
-  // ── Private State ────────────────────────────────
   const _state = {
     inputText:      '',
     parsedKanji:    [],
@@ -36,30 +14,47 @@ const AppState = (() => {
     isLoading:      false,
   };
 
-  // ── Subscribers ──────────────────────────────────
   const _listeners = [];
 
-  /**
-   * Notify every subscriber with the current state snapshot.
-   * Uses a shallow copy to prevent external mutation of internals.
-   */
+  // deep-copy arrays/objects so subscribers can't mutate internals
   function _notify() {
-    const snapshot = Object.assign({}, _state);
+    const snapshot = {
+      inputText:      _state.inputText,
+      parsedKanji:    [..._state.parsedKanji],
+      charStats:      Object.assign({}, _state.charStats),
+      kanjiData:      _state.kanjiData.map((k) => ({
+        ...k,
+        meanings:     Array.isArray(k.meanings) ? [...k.meanings] : [],
+        kun_readings: Array.isArray(k.kun_readings) ? [...k.kun_readings] : [],
+        on_readings:  Array.isArray(k.on_readings) ? [...k.on_readings] : [],
+      })),
+      flashcards:     _state.flashcards.map((c) => Object.assign({}, c)),
+      flashcardIndex: _state.flashcardIndex,
+      jlptFilter:     _state.jlptFilter,
+      isLoading:      _state.isLoading,
+    };
     _listeners.forEach((fn) => {
       try { fn(snapshot); }
       catch (err) { console.error('[State] Subscriber error:', err); }
     });
   }
 
-  // ── Public API ───────────────────────────────────
   return {
-    /** Register a callback that fires on every state change. */
     subscribe(fn) {
-      if (typeof fn === 'function') _listeners.push(fn);
+      if (typeof fn === 'function') {
+        _listeners.push(fn);
+        return () => {
+          const idx = _listeners.indexOf(fn);
+          if (idx !== -1) _listeners.splice(idx, 1);
+        };
+      }
+    },
+    unsubscribe(fn) {
+      const idx = _listeners.indexOf(fn);
+      if (idx !== -1) _listeners.splice(idx, 1);
     },
 
-    // ── Getters (return copies to protect internals) ──
-
+    // getters return copies to keep internals safe
     get inputText()      { return _state.inputText; },
     get parsedKanji()    { return [..._state.parsedKanji]; },
     get charStats()      { return Object.assign({}, _state.charStats); },
@@ -69,10 +64,8 @@ const AppState = (() => {
     get jlptFilter()     { return _state.jlptFilter; },
     get isLoading()      { return _state.isLoading; },
 
-    // ── Setters (mutate + notify) ──
-
     setInputText(text) {
-      _state.inputText = String(text);
+      _state.inputText = String(text ?? '');
       _notify();
     },
 
@@ -107,16 +100,13 @@ const AppState = (() => {
       _notify();
     },
 
-    // ── Flashcard Navigation ──
-
-    /** Advance to the next flashcard, wrapping at the end. */
+    // wraps around at both ends
     nextFlashcard() {
       if (_state.flashcards.length === 0) return;
       _state.flashcardIndex = (_state.flashcardIndex + 1) % _state.flashcards.length;
       _notify();
     },
 
-    /** Go back to the previous flashcard, wrapping at the start. */
     prevFlashcard() {
       if (_state.flashcards.length === 0) return;
       _state.flashcardIndex =
@@ -124,7 +114,6 @@ const AppState = (() => {
       _notify();
     },
 
-    /** Toggle the flipped state of a flashcard at a given index. */
     toggleFlashcard(index) {
       if (index >= 0 && index < _state.flashcards.length) {
         _state.flashcards[index].flipped = !_state.flashcards[index].flipped;
@@ -132,7 +121,6 @@ const AppState = (() => {
       }
     },
 
-    /** Reset the entire state back to initial values. */
     reset() {
       _state.inputText      = '';
       _state.parsedKanji    = [];

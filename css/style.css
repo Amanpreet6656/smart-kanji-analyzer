@@ -1,39 +1,28 @@
-/* ═══════════════════════════════════════════════════════════
-   STYLE.CSS — Smart Kanji & JLPT Analyzer
-   ═══════════════════════════════════════════════════════════
-   Design tokens → Layout → Components → Animations → Responsive
-   BEM naming: Block__Element--Modifier
-*/
-
-/* ─────────────────────────────────────────────────
-   1. DESIGN TOKENS (Custom Properties)
-   ───────────────────────────────────────────────── */
-
 :root {
   /* Palette */
-  --color-bg:            #f8fafc;
-  --color-surface:       #ffffff;
-  --color-border:        #e2e8f0;
-  --color-text:          #1e293b;
-  --color-text-muted:    #64748b;
-  --color-primary:       #2563eb;
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-border: #e2e8f0;
+  --color-text: #1e293b;
+  --color-text-muted: #64748b;
+  --color-primary: #2563eb;
   --color-primary-hover: #1d4ed8;
   --color-primary-light: #dbeafe;
 
   /* JLPT Level Colors */
-  --jlpt-n5:   #22c55e;  /* Green  — Easiest  */
-  --jlpt-n4:   #3b82f6;  /* Blue              */
-  --jlpt-n3:   #eab308;  /* Yellow            */
-  --jlpt-n2:   #f97316;  /* Orange            */
-  --jlpt-n1:   #ef4444;  /* Red    — Hardest  */
-  --jlpt-none: #94a3b8;  /* Gray   — Unrated  */
+  --jlpt-n5: #22c55e; 
+  --jlpt-n4: #3b82f6; 
+  --jlpt-n3: #eab308; 
+  --jlpt-n2: #f97316; 
+  --jlpt-n1: #ef4444; 
+  --jlpt-none: #94a3b8
 
   /* Spacing */
-  --space-xs:  0.25rem;
-  --space-sm:  0.5rem;
-  --space-md:  1rem;
-  --space-lg:  1.5rem;
-  --space-xl:  2rem;
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
   --space-2xl: 3rem;
 
   /* Radius */
@@ -43,9 +32,9 @@
   --radius-full: 9999px;
 
   /* Shadows */
-  --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md:  0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg:  0 8px 30px rgba(0, 0, 0, 0.12);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
 
   /* Transitions */
   --transition-fast: 150ms ease;
@@ -53,16 +42,15 @@
   --transition-slow: 400ms ease;
 
   /* Typography */
-  --font-sans:  'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --font-ja:    'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
-  --font-mono:  'JetBrains Mono', 'Fira Code', monospace;
+  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-ja:
+    "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
 }
 
-/* ─────────────────────────────────────────────────
-   2. RESET & BASE
-   ───────────────────────────────────────────────── */
-
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -81,10 +69,6 @@ body {
   line-height: 1.6;
   min-height: 100vh;
 }
-
-/* ─────────────────────────────────────────────────
-   3. APP HEADER
-   ───────────────────────────────────────────────── */
 
 .app-header {
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
@@ -117,7 +101,7 @@ body {
   justify-content: center;
   width: 48px;
   height: 48px;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-md);
 }
 
@@ -130,19 +114,11 @@ body {
   margin-right: auto;
 }
 
-/* ─────────────────────────────────────────────────
-   4. MAIN LAYOUT
-   ───────────────────────────────────────────────── */
-
 .app-main {
   max-width: 900px;
   margin: 0 auto;
   padding: var(--space-xl) var(--space-lg) var(--space-2xl);
 }
-
-/* ─────────────────────────────────────────────────
-   5. ANALYZER INPUT SECTION
-   ───────────────────────────────────────────────── */
 
 .analyzer-input {
   background: var(--color-surface);
@@ -202,7 +178,9 @@ body {
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: background var(--transition-fast), transform var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .analyzer-input__button:hover:not(:disabled) {
@@ -234,17 +212,15 @@ body {
   font-size: 1rem;
 }
 
-/* ─────────────────────────────────────────────────
-   6. STATUS BAR
-   ───────────────────────────────────────────────── */
-
 .status-bar {
   margin-top: var(--space-md);
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-sm);
   font-size: 0.88rem;
   font-weight: 500;
-  transition: background var(--transition-base), color var(--transition-base);
+  transition:
+    background var(--transition-base),
+    color var(--transition-base);
 }
 
 .status-bar--info {
@@ -272,10 +248,6 @@ body {
   background: #fef2f2;
   color: #b91c1c;
 }
-
-/* ─────────────────────────────────────────────────
-   7. STATS DASHBOARD
-   ───────────────────────────────────────────────── */
 
 .stats-dashboard {
   display: grid;
@@ -312,10 +284,6 @@ body {
   margin-top: var(--space-xs);
 }
 
-/* ─────────────────────────────────────────────────
-   8. JLPT FILTER TABS
-   ───────────────────────────────────────────────── */
-
 .jlpt-filters {
   display: flex;
   flex-wrap: wrap;
@@ -347,28 +315,51 @@ body {
   color: #ffffff;
 }
 
-/* ─────────────────────────────────────────────────
-   9. JLPT BADGE UTILITIES
-   ───────────────────────────────────────────────── */
-
-.jlpt-badge--n5  { --badge-color: var(--jlpt-n5);  }
-.jlpt-badge--n4  { --badge-color: var(--jlpt-n4);  }
-.jlpt-badge--n3  { --badge-color: var(--jlpt-n3);  }
-.jlpt-badge--n2  { --badge-color: var(--jlpt-n2);  }
-.jlpt-badge--n1  { --badge-color: var(--jlpt-n1);  }
-.jlpt-badge--none { --badge-color: var(--jlpt-none); }
+.jlpt-badge--n5 {
+  --badge-color: var(--jlpt-n5);
+}
+.jlpt-badge--n4 {
+  --badge-color: var(--jlpt-n4);
+}
+.jlpt-badge--n3 {
+  --badge-color: var(--jlpt-n3);
+}
+.jlpt-badge--n2 {
+  --badge-color: var(--jlpt-n2);
+}
+.jlpt-badge--n1 {
+  --badge-color: var(--jlpt-n1);
+}
+.jlpt-badge--none {
+  --badge-color: var(--jlpt-none);
+}
 
 /* Tab-level badge coloring when active */
-.jlpt-filters__tab.jlpt-badge--n5.jlpt-filters__tab--active  { background: var(--jlpt-n5);  border-color: var(--jlpt-n5);  }
-.jlpt-filters__tab.jlpt-badge--n4.jlpt-filters__tab--active  { background: var(--jlpt-n4);  border-color: var(--jlpt-n4);  }
-.jlpt-filters__tab.jlpt-badge--n3.jlpt-filters__tab--active  { background: var(--jlpt-n3);  border-color: var(--jlpt-n3);  color: #1e293b; }
-.jlpt-filters__tab.jlpt-badge--n2.jlpt-filters__tab--active  { background: var(--jlpt-n2);  border-color: var(--jlpt-n2);  }
-.jlpt-filters__tab.jlpt-badge--n1.jlpt-filters__tab--active  { background: var(--jlpt-n1);  border-color: var(--jlpt-n1);  }
-.jlpt-filters__tab.jlpt-badge--none.jlpt-filters__tab--active { background: var(--jlpt-none); border-color: var(--jlpt-none); }
-
-/* ─────────────────────────────────────────────────
-   10. KANJI BREAKDOWN GRID
-   ───────────────────────────────────────────────── */
+.jlpt-filters__tab.jlpt-badge--n5.jlpt-filters__tab--active {
+  background: var(--jlpt-n5);
+  border-color: var(--jlpt-n5);
+}
+.jlpt-filters__tab.jlpt-badge--n4.jlpt-filters__tab--active {
+  background: var(--jlpt-n4);
+  border-color: var(--jlpt-n4);
+}
+.jlpt-filters__tab.jlpt-badge--n3.jlpt-filters__tab--active {
+  background: var(--jlpt-n3);
+  border-color: var(--jlpt-n3);
+  color: #1e293b;
+}
+.jlpt-filters__tab.jlpt-badge--n2.jlpt-filters__tab--active {
+  background: var(--jlpt-n2);
+  border-color: var(--jlpt-n2);
+}
+.jlpt-filters__tab.jlpt-badge--n1.jlpt-filters__tab--active {
+  background: var(--jlpt-n1);
+  border-color: var(--jlpt-n1);
+}
+.jlpt-filters__tab.jlpt-badge--none.jlpt-filters__tab--active {
+  background: var(--jlpt-none);
+  border-color: var(--jlpt-none);
+}
 
 .kanji-grid {
   display: grid;
@@ -385,8 +376,6 @@ body {
   font-size: 0.9rem;
 }
 
-/* ── Individual Card ── */
-
 .kanji-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -394,7 +383,9 @@ body {
   padding: 0;
   overflow: hidden;
   box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+  transition:
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
   animation: fade-in-up var(--transition-slow);
 }
 
@@ -484,10 +475,6 @@ body {
   letter-spacing: 0.05em;
 }
 
-/* ─────────────────────────────────────────────────
-   11. FLASHCARD SECTION
-   ───────────────────────────────────────────────── */
-
 .flashcard-section {
   margin-top: var(--space-2xl);
   animation: fade-in-up var(--transition-slow);
@@ -549,8 +536,6 @@ body {
   font-size: 0.8rem;
   color: var(--color-text-muted);
 }
-
-/* ── Flashcard (3D Flip) ── */
 
 .flashcard-stage {
   perspective: 1000px;
@@ -657,10 +642,6 @@ body {
   max-width: 260px;
 }
 
-/* ─────────────────────────────────────────────────
-   12. FOOTER
-   ───────────────────────────────────────────────── */
-
 .app-footer {
   text-align: center;
   padding: var(--space-xl) var(--space-lg);
@@ -680,10 +661,6 @@ body {
   text-decoration: underline;
 }
 
-/* ─────────────────────────────────────────────────
-   13. ANIMATIONS
-   ───────────────────────────────────────────────── */
-
 @keyframes fade-in-up {
   from {
     opacity: 0;
@@ -696,13 +673,14 @@ body {
 }
 
 @keyframes pulse-bg {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
-
-/* ─────────────────────────────────────────────────
-   14. RESPONSIVE BREAKPOINTS
-   ───────────────────────────────────────────────── */
 
 @media (max-width: 640px) {
   .app-header__title {
@@ -760,12 +738,10 @@ body {
   }
 }
 
-/* ─────────────────────────────────────────────────
-   15. ACCESSIBILITY — Reduced Motion
-   ───────────────────────────────────────────────── */
-
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
