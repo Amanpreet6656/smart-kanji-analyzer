@@ -58,16 +58,3 @@ User Input
 }
 ```
 
-## Local Development
-
-To run the project locally, serve the directory using a local web server:
-
-**Using Python 3:**
-```bash
-python -m http.server 8000
-```
-
-**Using Node.js:**
-```bash
-npx http-server -p 8000
-```
