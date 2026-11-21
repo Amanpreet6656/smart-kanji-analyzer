@@ -1,5 +1,7 @@
 # Smart Kanji & JLPT Analyzer
 
+**[Live Deployment: smart-kanji-analyzer.vercel.app](https://smart-kanji-analyzer.vercel.app)**
+
 A client-side JavaScript application designed to parse Japanese text, isolate Kanji characters via Unicode block evaluation, and retrieve morphological data and JLPT classifications. Built entirely with Vanilla JavaScript to study custom state management, asynchronous data pipelining, and defensive DOM rendering.
 
 ## System Architecture & Mechanics
@@ -58,16 +60,3 @@ User Input
 }
 ```
 
-## Local Development
-
-To run the project locally, serve the directory using a local web server:
-
-**Using Python 3:**
-```bash
-python -m http.server 8000
-```
-
-**Using Node.js:**
-```bash
-npx http-server -p 8000
-```
