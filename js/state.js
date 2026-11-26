@@ -1,4 +1,4 @@
-// state.js — central app state w/ pub-sub notifications
+// state.js: central app state with pub-sub notifications
 
 const AppState = (() => {
   'use strict';

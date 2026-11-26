@@ -1,10 +1,10 @@
-// parser.js — extract and classify Japanese characters from text
+// parser.js: extract and classify Japanese characters from text
 
 const KanjiParser = (() => {
   'use strict';
 
-  // unicode ranges for CJK, hiragana, katakana
-  const RE_KANJI    = /[\u4E00-\u9FAF\u3400-\u4DBF]/;
+  // Unicode ranges covering CJK Unified Ideographs, Extension A, Compatibility Ideographs, and Extension B
+  const RE_KANJI    = /[\u4E00-\u9FAF\u3400-\u4DBF\uF900-\uFAFF\u{20000}-\u{2A6DF}]/u;
   const RE_HIRAGANA = /[\u3040-\u309F]/;
   const RE_KATAKANA = /[\u30A0-\u30FF]/;
 
@@ -20,9 +20,9 @@ const KanjiParser = (() => {
     return RE_KATAKANA.test(char);
   }
 
-  // returns deduplicated kanji array + script counts
+  // Returns deduplicated kanji array and per-script counts
   function parse(text) {
-    const chars = text ? [...String(text)] : []; // spread handles surrogate pairs
+    const chars = text ? [...String(text)] : [];
 
     const seen  = new Set();
     const kanji = [];
@@ -55,3 +55,7 @@ const KanjiParser = (() => {
 
   return { isKanji, isHiragana, isKatakana, parse };
 })();
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = KanjiParser;
+}

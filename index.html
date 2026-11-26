@@ -22,8 +22,8 @@
           Smart Kanji &amp; JLPT Analyzer
         </h1>
         <p class="app-header__subtitle">
-          Paste any Japanese sentence — get instant kanji breakdowns, JLPT
-          grading, and interactive flashcards.
+          Paste any Japanese sentence to view kanji breakdowns, JLPT
+          classifications, and interactive flashcards.
         </p>
       </div>
     </header>
@@ -31,7 +31,7 @@
     <main class="app-main">
       <section class="analyzer-input" aria-label="Text input">
         <label for="analyzer-textarea" class="analyzer-input__label">
-          Enter a Japanese sentence, tweet, or headline:
+          Enter a Japanese sentence, headline, or passage:
         </label>
         <textarea
           id="analyzer-textarea"
@@ -43,10 +43,11 @@
         ></textarea>
         <div class="analyzer-input__actions">
           <button id="analyze-btn" class="analyzer-input__button" type="button">
-            <span class="analyzer-input__button-icon" aria-hidden="true"
-              >🔍</span
-            >
-            Analyze Text
+            <svg class="analyzer-input__button-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span class="analyzer-input__button-label">Analyze Text</span>
           </button>
           <button
             id="clear-btn"
@@ -59,7 +60,7 @@
       </section>
 
       <div id="status-bar" class="status-bar" role="status" aria-live="polite">
-        <span class="status-bar__text">Ready for your next sentence ✨</span>
+        <span class="status-bar__text">Ready for your next sentence.</span>
       </div>
 
       <section
@@ -122,7 +123,7 @@
 
       <section id="flashcard-section" class="flashcard-section" hidden>
         <div class="flashcard-section__header">
-          <h2 class="flashcard-section__title">📇 Flashcard Review</h2>
+          <h2 class="flashcard-section__title">Flashcard Review</h2>
           <div class="flashcard-section__controls">
             <button
               id="flashcard-prev"
@@ -130,7 +131,9 @@
               type="button"
               aria-label="Previous card"
             >
-              ◀
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
             </button>
             <span id="flashcard-counter" class="flashcard-counter">1 / 1</span>
             <button
@@ -139,7 +142,9 @@
               type="button"
               aria-label="Next card"
             >
-              ▶
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
             </button>
           </div>
         </div>
@@ -159,7 +164,7 @@
         &amp;
         <a href="https://jisho.org" target="_blank" rel="noopener noreferrer"
           >Jisho.org</a
-        >. Built for learners, by learners. 🎌
+        >. Client-side Japanese Kanji study utility.
       </p>
     </footer>
 
@@ -182,7 +187,7 @@
             const text = textarea ? textarea.value.trim() : "";
             if (!text) {
               UIRenderer.setStatus(
-                "Please paste a Japanese sentence to get started 📝",
+                "Please paste a Japanese sentence to get started.",
                 "info",
               );
               return;
@@ -201,14 +206,14 @@
               AppState.setKanjiData([]);
               AppState.setFlashcards([]);
               UIRenderer.setStatus(
-                "No kanji found in this text — try a sentence with kanji characters.",
+                "No kanji found in this text; try a sentence with kanji characters.",
                 "warn",
               );
               return;
             }
 
             UIRenderer.setStatus(
-              `Extracted ${parsed.kanji.length} unique kanji character${parsed.kanji.length > 1 ? "s" : ""} — fetching data…`,
+              `Extracted ${parsed.kanji.length} unique kanji character${parsed.kanji.length > 1 ? "s" : ""} - fetching data...`,
               "loading",
             );
             AppState.setLoading(true);
@@ -227,7 +232,7 @@
                   [
                     ...(entry.kun_readings || []),
                     ...(entry.on_readings || []),
-                  ].join("、 ") || "—",
+                  ].join("、 ") || "-",
                 meanings:
                   (entry.meanings || []).join(", ") || "No meaning available",
                 jlpt: entry.jlpt,
@@ -236,7 +241,7 @@
               AppState.setFlashcards(flashcards);
 
               UIRenderer.setStatus(
-                `All ${parsed.kanji.length} character${parsed.kanji.length > 1 ? "s" : ""} analyzed successfully ✅`,
+                `All ${parsed.kanji.length} character${parsed.kanji.length > 1 ? "s" : ""} analyzed successfully.`,
                 "success",
               );
             } finally {
@@ -252,7 +257,7 @@
             currentAnalysisId++;
             if (textarea) textarea.value = "";
             AppState.reset();
-            UIRenderer.setStatus("Ready for your next sentence ✨", "info");
+            UIRenderer.setStatus("Ready for your next sentence.", "info");
           });
         }
 

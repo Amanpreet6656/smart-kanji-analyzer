@@ -1,4 +1,4 @@
-// ui.js — renders state to the DOM, every access is null-checked
+// ui.js: renders state to the DOM with explicit null checks and HTML escaping
 
 const UIRenderer = (() => {
   'use strict';
@@ -13,8 +13,18 @@ const UIRenderer = (() => {
   };
 
   const JLPT_LABEL_MAP = {
-    5: 'N5', 4: 'N4', 3: 'N3', 2: 'N2', 1: 'N1', null: '—',
+    5: 'N5', 4: 'N4', 3: 'N3', 2: 'N2', 1: 'N1', null: '-',
   };
+
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
 
   function setStatus(message, type = 'info') {
     const bar = document.getElementById('status-bar');
@@ -73,34 +83,34 @@ const UIRenderer = (() => {
   function buildKanjiCard(entry) {
     const jlptNum    = entry.jlpt;
     const badgeClass = JLPT_CLASS_MAP[jlptNum] || JLPT_CLASS_MAP[null];
-    const badgeLabel = JLPT_LABEL_MAP[jlptNum] || '—';
+    const badgeLabel = JLPT_LABEL_MAP[jlptNum] || '-';
 
-    const kun      = (entry.kun_readings || []).join('、 ') || '—';
-    const on       = (entry.on_readings  || []).join('、 ') || '—';
+    const kun      = (entry.kun_readings || []).join('、 ') || '-';
+    const on       = (entry.on_readings  || []).join('、 ') || '-';
     const meanings = (entry.meanings || []).join(', ') || 'No data';
 
     return `
-      <article class="kanji-card" data-jlpt="${jlptNum}">
+      <article class="kanji-card" data-jlpt="${escapeHtml(jlptNum)}">
         <div class="kanji-card__header">
-          <span class="kanji-card__glyph">${entry.character}</span>
-          <span class="kanji-card__badge ${badgeClass}">${badgeLabel}</span>
+          <span class="kanji-card__glyph">${escapeHtml(entry.character)}</span>
+          <span class="kanji-card__badge ${badgeClass}">${escapeHtml(badgeLabel)}</span>
         </div>
         <div class="kanji-card__body">
           <div class="kanji-card__row">
             <span class="kanji-card__label">Kun</span>
-            <span class="kanji-card__value">${kun}</span>
+            <span class="kanji-card__value">${escapeHtml(kun)}</span>
           </div>
           <div class="kanji-card__row">
             <span class="kanji-card__label">On</span>
-            <span class="kanji-card__value">${on}</span>
+            <span class="kanji-card__value">${escapeHtml(on)}</span>
           </div>
           <div class="kanji-card__row">
             <span class="kanji-card__label">Meaning</span>
-            <span class="kanji-card__value">${meanings}</span>
+            <span class="kanji-card__value">${escapeHtml(meanings)}</span>
           </div>
           <div class="kanji-card__row">
             <span class="kanji-card__label">Strokes</span>
-            <span class="kanji-card__value">${entry.stroke_count || '?'}</span>
+            <span class="kanji-card__value">${escapeHtml(entry.stroke_count || '?')}</span>
           </div>
         </div>
         ${entry._source === 'mock' || entry._source === 'placeholder'
@@ -118,7 +128,6 @@ const UIRenderer = (() => {
 
     if (!filtered || filtered.length === 0) {
       if (state.kanjiData && state.kanjiData.length > 0) {
-        // data exists but nothing matches the active filter
         grid.innerHTML = `
           <div class="kanji-grid__empty">
             <p>No kanji match the selected JLPT level. Try "All" to see everything.</p>
@@ -155,7 +164,7 @@ const UIRenderer = (() => {
     }
 
     const jlptBadgeClass = JLPT_CLASS_MAP[card.jlpt] || JLPT_CLASS_MAP[null];
-    const jlptLabel      = JLPT_LABEL_MAP[card.jlpt] || '—';
+    const jlptLabel      = JLPT_LABEL_MAP[card.jlpt] || '-';
     const flipped        = card.flipped;
 
     stage.innerHTML = `
@@ -163,22 +172,22 @@ const UIRenderer = (() => {
            data-index="${idx}"
            tabindex="0"
            role="button"
-           aria-label="Flashcard for ${card.character}. ${flipped ? 'Showing answer.' : 'Click to reveal.'}">
+           aria-label="Flashcard for ${escapeHtml(card.character)}. ${flipped ? 'Showing answer.' : 'Click to reveal.'}">
         <div class="flashcard__inner">
           <div class="flashcard__front">
-            <span class="flashcard__glyph">${card.front}</span>
+            <span class="flashcard__glyph">${escapeHtml(card.front)}</span>
             <span class="flashcard__prompt">Tap to reveal</span>
           </div>
           <div class="flashcard__back">
-            <span class="flashcard__badge ${jlptBadgeClass}">${jlptLabel}</span>
-            <span class="flashcard__readings">${card.readings || '—'}</span>
-            <span class="flashcard__meanings">${card.meanings || '—'}</span>
+            <span class="flashcard__badge ${jlptBadgeClass}">${escapeHtml(jlptLabel)}</span>
+            <span class="flashcard__readings">${escapeHtml(card.readings || '-')}</span>
+            <span class="flashcard__meanings">${escapeHtml(card.meanings || '-')}</span>
           </div>
         </div>
       </div>
     `;
 
-    // re-attach listeners since innerHTML wipes them
+    // Re-attach listeners after innerHTML update
     const flashcardEl = stage.querySelector('.flashcard');
     if (flashcardEl) {
       flashcardEl.addEventListener('click', () => {
@@ -197,12 +206,11 @@ const UIRenderer = (() => {
     const btn = document.getElementById('analyze-btn');
     if (btn) {
       btn.disabled = state.isLoading;
-      const icon = btn.querySelector('.analyzer-input__button-icon');
-      if (icon) icon.textContent = state.isLoading ? '⏳' : '🔍';
+      const label = btn.querySelector('.analyzer-input__button-label');
+      if (label) label.textContent = state.isLoading ? 'Analyzing...' : 'Analyze Text';
     }
   }
 
-  // single entry point — delegates to each sub-renderer
   function render(state) {
     renderLoading(state);
     renderStats(state);

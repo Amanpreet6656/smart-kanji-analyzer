@@ -1,10 +1,34 @@
-// api.js — fetch kanji data from kanjiapi.dev, fall back to mock data
+// api.js: fetch kanji data from kanjiapi.dev with localStorage cache and offline fallback
 
 const KanjiAPI = (() => {
   'use strict';
 
   const BASE_URL = 'https://kanjiapi.dev/v1/kanji';
   const TIMEOUT_MS = 8000;
+  const CACHE_KEY = 'ska_kanji_cache_v1';
+  const MAX_CACHE_ENTRIES = 200;
+
+  function loadCache() {
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveCacheEntry(character, entry) {
+    try {
+      const cache = loadCache();
+      const keys = Object.keys(cache);
+      if (keys.length >= MAX_CACHE_ENTRIES && !cache[character]) {
+        delete cache[keys[0]];
+      }
+      cache[character] = entry;
+      localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+    } catch (e) {
+    }
+  }
 
   // offline fallback data
   const MOCK_DATA = {
@@ -57,8 +81,13 @@ const KanjiAPI = (() => {
     '口': { character: '口', grade: 1, stroke_count: 3, meanings: ['mouth', 'opening'], kun_readings: ['くち'], on_readings: ['コウ', 'ク'], jlpt: 4 },
   };
 
-  // fetch a single kanji, abort after TIMEOUT_MS
+  // Fetch a single kanji from cache or API, abort after TIMEOUT_MS
   async function fetchOne(character) {
+    const cache = loadCache();
+    if (cache[character]) {
+      return { ...cache[character], _source: 'cache' };
+    }
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -77,8 +106,8 @@ const KanjiAPI = (() => {
 
       const data = await res.json();
 
-      // use ?? instead of || so falsy values like 0 don't get clobbered
-      return {
+      // Use nullish coalescing so falsy values like grade 0 are preserved
+      const normalized = {
         character:    data.kanji ?? character,
         grade:        data.grade ?? null,
         stroke_count: data.stroke_count ?? 0,
@@ -89,13 +118,15 @@ const KanjiAPI = (() => {
         unicode:      data.unicode ?? '',
         _source:      'kanjiapi.dev',
       };
+      saveCacheEntry(character, normalized);
+      return normalized;
     } catch (err) {
       clearTimeout(timeoutId);
 
       if (err.name === 'AbortError') {
-        console.info(`[API] Timeout for "${character}" — using fallback.`);
+        console.info(`[API] Timeout for "${character}" - using fallback.`);
       } else {
-        console.info(`[API] Fetch failed for "${character}":`, err.message, '— using fallback.');
+        console.info(`[API] Fetch failed for "${character}":`, err.message, '- using fallback.');
       }
 
       return getMockData(character);
@@ -143,7 +174,7 @@ const KanjiAPI = (() => {
         return result.value;
       }
       // shouldn't reach here since fetchOne catches internally, but just in case
-      console.info(`[API] Unexpected rejection for "${kanjiList[i]}" — using fallback.`);
+      console.info(`[API] Unexpected rejection for "${kanjiList[i]}" - using fallback.`);
       return getMockData(kanjiList[i]);
     });
   }

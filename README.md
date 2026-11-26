@@ -2,46 +2,38 @@
 
 **[Live Deployment: smart-kanji-analyzer.vercel.app](https://smart-kanji-analyzer.vercel.app)**
 
-A client-side JavaScript application designed to parse Japanese text, isolate Kanji characters via Unicode block evaluation, and retrieve morphological data and JLPT classifications. Built entirely with Vanilla JavaScript to study custom state management, asynchronous data pipelining, and defensive DOM rendering.
+A client-side JavaScript application designed to extract Kanji characters from Japanese text via Unicode block evaluation and retrieve readings, stroke counts, and JLPT levels from `kanjiapi.dev`. Built with Vanilla JavaScript (ES6+) to practice custom pub-sub state management, `localStorage` response caching, asynchronous API fallbacks, and escaped DOM rendering.
+
+Note on scope: This tool performs character-level Unicode extraction rather than full sentence-level morphological segmentation (such as MeCab or Kuromoji).
 
 ## System Architecture & Mechanics
 
-- **Unicode Parsing Pipeline (`parser.js`):** Evaluates input strings against Japanese Unicode ranges (e.g., `\u4E00-\u9FAF`) to isolate Kanji. Utilizes ES6 Spread syntax for safe multi-byte character handling and `Set` objects for O(1) duplicate filtering.
-- **Network & Fallback Layer (`api.js`):** Interfaces with external REST APIs to fetch character readings and JLPT data. Implements a robust offline-first fallback mechanism routing to local mock data to prevent application crashes during network failure.
-- **State Management (`state.js`):** Employs a centralized observer pattern to decouple data processing from the user interface. 
-- **Defensive Rendering (`ui.js`):** Pure rendering engine that strictly enforces DOM existence checks before mutation, guaranteeing zero null-reference exceptions.
+- **Unicode Parsing Pipeline (`parser.js`):** Evaluates input strings against Japanese Unicode ranges (CJK Unified Ideographs `\u4E00-\u9FAF`, Extension A `\u3400-\u4DBF`, Compatibility Ideographs `\uF900-\uFAFF`, and Extension B `\u{20000}-\u{2A6DF}`) to isolate unique Kanji. Uses ES6 spread syntax for safe multi-byte character iteration and `Set` objects for deduplication.
+- **Network, Cache & Fallback Layer (`api.js`):** Queries `kanjiapi.dev` with `AbortController` timeouts, caches resolved entries in `localStorage` (`ska_kanji_cache_v1`), and falls back to curated offline entries when unreachable.
+- **State Management (`state.js`):** Employs a centralized observer pattern (`AppState`) to decouple data processing from rendering.
+- **Escaped DOM Rendering (`ui.js`):** Checks DOM node existence before updates and HTML-escapes API-sourced strings prior to insertion.
 
 ## Project Structure
 
 ```text
-kanji-project/
-├── index.html          # Core document structure
+smart-kanji-analyzer/
+├── index.html          # Document structure and event wiring
 ├── css/
 │   └── style.css       # BEM-methodology styling and JLPT color tokens
 ├── js/
-│   ├── state.js        # Centralized state initialization and mutation logic
+│   ├── state.js        # Centralized pub-sub state store
 │   ├── parser.js       # Character isolation and Unicode evaluation
-│   ├── api.js          # Network requests, Promise handling, and mock fallbacks
-│   └── ui.js           # DOM manipulation and event listeners
-└── README.md           # System documentation
+│   ├── api.js          # Network requests, localStorage cache, and fallbacks
+│   └── ui.js           # Escaped DOM manipulation and flashcard interaction
+├── tests/
+│   └── test_parser.js  # Node.js unit tests for Unicode extraction
+└── README.md           # Project documentation
 ```
 
-## Data Flow
+## Verification
 
-```text
-User Input
-    │
-    ▼
-┌──────────┐     ┌──────────┐     ┌──────────┐
-│ parser.js│────▶│  api.js  │────▶│ state.js │
-│(extract) │     │ (fetch)  │     │ (store)  │
-└──────────┘     └──────────┘     └────┬─────┘
-                                       │ notify()
-                                       ▼
-                                  ┌──────────┐
-                                  │  ui.js   │
-                                  │ (render) │
-                                  └──────────┘
+```bash
+node tests/test_parser.js
 ```
 
 ## API Reference
@@ -59,4 +51,3 @@ User Input
   "jlpt": 5
 }
 ```
-
